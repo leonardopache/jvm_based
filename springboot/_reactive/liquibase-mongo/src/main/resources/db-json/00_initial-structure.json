@@ -1,0 +1,32 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "drop-collection",
+        "author": "marquesle",
+        "comment": "Drop Collections if exists",
+        "changes": [
+          {
+            "dropCollection": {
+              "collectionName": "customers"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "create-collection",
+        "author": "marquesle",
+        "comment": "Create Collections",
+        "changes": [
+          {
+            "createCollection": {
+              "collectionName": "customers"
+            }
+          }
+        ]
+      }
+    }
+  ]
+}

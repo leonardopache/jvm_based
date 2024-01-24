@@ -1,0 +1,67 @@
+{
+  "databaseChangeLog": [
+    {
+      "changeSet": {
+        "id": "insert-customers",
+        "author": "marquesle",
+        "comment": "Insert base customer",
+        "changes": [
+          {
+            "insertMany": {
+              "collectionName": "customers",
+              "documents": {
+                "$rawJson": [
+                  {
+                    "name": "Akito"
+                  },
+                  {
+                    "name": "Otika"
+                  }
+                ]
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "insert-owner",
+        "author": "marquesle",
+        "comment": "Insert base customer owner",
+        "changes": [
+          {
+            "insertOne": {
+              "collectionName": "customers",
+              "document": {
+                "$rawJson": {
+                  "name": "John Doe"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "changeSet": {
+        "id": "insert-test",
+        "author": "marquesle",
+        "tag": "0.10.0",
+        "comment": "Insert base customer owner",
+        "changes": [
+          {
+            "insertOne": {
+              "collectionName": "customers",
+              "document": {
+                "$rawJson": {
+                  "name": "Jane Doe"
+                }
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
