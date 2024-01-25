@@ -1,0 +1,20 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog https://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.8.xsd">
+    <changeSet author="myself" id="insert-samples">
+        <insert tableName="samples">
+            <column name="name" value="Neo"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="samples">
+            <column name="name" value="Trinity"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+        <insert tableName="samples">
+            <column name="name" value="Morpheus"/>
+            <column name="status" value="ACTIVE"/>
+        </insert>
+    </changeSet>
+
+</databaseChangeLog>
