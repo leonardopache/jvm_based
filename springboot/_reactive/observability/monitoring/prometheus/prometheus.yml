@@ -1,10 +1,17 @@
 remote_write:
   - url: http://mimir:9009/api/v1/push
 scrape_configs:
-  - job_name: 'App Metrics'
+  - job_name: 'Fibo Ms Server'
     metrics_path: '/actuator/prometheus'
     scrape_interval: 3s
     static_configs:
       - targets: ['192.168.1.50:8090']
         labels:
-          application: 'My Spring Boot Application'
+          application: 'fibo-server'
+  - job_name: 'Fibo Ms Client'
+    metrics_path: '/actuator/prometheus'
+    scrape_interval: 3s
+    static_configs:
+      - targets: ['192.168.1.50:8080']
+        labels:
+          application: 'fibo-client'
