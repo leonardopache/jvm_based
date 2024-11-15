@@ -1,0 +1,11 @@
+# Get all names
+# @name get-all
+GET localhost:9088/api/v1/names
+
+####
+# create name
+# @name create-name
+POST localhost:9088/api/v1/names
+Content-Type: text/plain
+
+John
