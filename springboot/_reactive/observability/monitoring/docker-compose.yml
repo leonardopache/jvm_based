@@ -13,14 +13,14 @@ services:
      networks:
        - grafananet
     
-  # promtail:
-  #   image: grafana/promtail:latest
-  #   container_name: promtail
-  #   volumes:
-  #     - /tmp/spring-boot/logs:/var/log/
-  #     - ./promtail/promtail.yml:/etc/promtail/promtail.yml
-  #   networks:
-  #     - grafananet
+   promtail:
+     image: grafana/promtail:latest
+     container_name: promtail
+     volumes:
+       - /tmp/spring-boot/logs:/var/log/
+       - ./promtail/promtail.yml:/etc/promtail/promtail.yml
+     networks:
+       - grafananet
 
    loki:
      image: grafana/loki:latest
@@ -38,29 +38,29 @@ services:
      networks:
        - grafananet
 
-   mimir:
-     image: grafana/mimir:latest
-     container_name: mimir
-     ports:
-       - "9009:9009"
-     volumes:
-       - ./mimir:/etc/mimir/
-     command: -config.file=/etc/mimir/demo.yml
-     networks:
-       - grafananet
-
-   tempo:
-     image: grafana/tempo
-     extra_hosts: ['host.docker.internal:host-gateway']
-     command: [ "-config.file=/etc/tempo.yaml" ]
-     volumes:
-       - ./tempo/tempo.yaml:/etc/tempo.yaml:ro
-       - ./tempo-data:/tmp/tempo
-     ports:
-       - "14268"  # jaeger ingest
-       - "9411:9411" # zipkin
-     networks:
-       - grafananet
+#   mimir:
+#     image: grafana/mimir:latest
+#     container_name: mimir
+#     ports:
+#       - "9009:9009"
+#     volumes:
+#       - ./mimir:/etc/mimir/
+#     command: -config.file=/etc/mimir/demo.yml
+#     networks:
+#       - grafananet
+#
+#   tempo:
+#     image: grafana/tempo
+#     extra_hosts: ['host.docker.internal:host-gateway']
+#     command: [ "-config.file=/etc/tempo.yaml" ]
+#     volumes:
+#       - ./tempo/tempo.yaml:/etc/tempo.yaml:ro
+#       - ./tempo-data:/tmp/tempo
+#     ports:
+#       - "14268"  # jaeger ingest
+#       - "9411:9411" # zipkin
+#     networks:
+#       - grafananet
 
 
 #   tempo:

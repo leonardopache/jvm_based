@@ -27,6 +27,7 @@ import reactor.netty.transport.logging.AdvancedByteBufFormat;
 import java.time.Duration;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Stream;
 
 @SpringBootApplication
 public class FiboClientApplication {
@@ -81,7 +82,6 @@ class SampleInitializer {
                 .uri("http://localhost:8090/api/calculate-fibos")
                 .contentType(MediaType.APPLICATION_JSON)
                 .accept(MediaType.APPLICATION_JSON);
-
 
         return Flux.interval(Duration.ofMillis(1000))
                 .flatMap(tick -> {
