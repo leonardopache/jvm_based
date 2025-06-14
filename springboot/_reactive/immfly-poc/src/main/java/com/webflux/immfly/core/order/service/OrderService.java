@@ -1,5 +1,13 @@
 package com.webflux.immfly.core.order.service;
 
+import static com.webflux.immfly.core.product.service.ProductService.PRODUCT_ERROR_MSG_OUT_OF_STOCK;
+
+import java.util.List;
+import java.util.UUID;
+
+import org.springframework.stereotype.Service;
+import org.springframework.util.CollectionUtils;
+
 import com.webflux.immfly.api.order.model.OrderRequest;
 import com.webflux.immfly.api.order.model.OrderRequest.OrderItem;
 import com.webflux.immfly.api.order.model.OrderResponse;
@@ -8,16 +16,10 @@ import com.webflux.immfly.core.order.model.OrderStatus;
 import com.webflux.immfly.core.order.reposistory.OrderRepository;
 import com.webflux.immfly.core.product.service.ProductService;
 import com.webflux.immfly.remote.PaymentGateway;
+
 import lombok.AllArgsConstructor;
-import org.springframework.stereotype.Service;
-import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-
-import java.util.List;
-import java.util.UUID;
-
-import static com.webflux.immfly.core.product.service.ProductService.PRODUCT_ERROR_MSG_OUT_OF_STOCK;
 
 @Service
 @AllArgsConstructor
@@ -117,5 +119,4 @@ public class OrderService {
                         }))
                 .map(Order::toOrderResponse);
     }
-
 }

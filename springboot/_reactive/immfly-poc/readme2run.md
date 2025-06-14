@@ -15,17 +15,7 @@ docker run \
     -d postgres
 ```
 - Create table as R2dbc are not creating automatically
-```
-create table if not exists public.reservation(
-    id SERIAL primary key, 
-    name VARCHAR(255));
-```
-- Connection of springboot to db configured in the application.properties
-```
-spring.r2dbc.url=r2dbc:postgresql://postgresUser:postgresPW@localhost:5455/postgresDB
-```
-
-
-
-
-
+Using Liquibase for creation of tables and inital insert
+ - [structure](src/main/resources/db/initial-structure.xml)
+ - [initial data](src/main/resources/db/initial-data.xml)
+ - Connection of springboot to db configured in the application.properties
