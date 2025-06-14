@@ -62,7 +62,7 @@ class SampleService {
 		else {
 			var array = new BigInteger[numInteger];
 			array[0] = BigInteger.ZERO;
-			array[1] = BigInteger.valueOf(1l);
+			array[1] = BigInteger.valueOf(1);
 
 			for (int i = 2; i < numInteger; i++) {
 				array[i] = array[i - 2].add(array[i - 1]);

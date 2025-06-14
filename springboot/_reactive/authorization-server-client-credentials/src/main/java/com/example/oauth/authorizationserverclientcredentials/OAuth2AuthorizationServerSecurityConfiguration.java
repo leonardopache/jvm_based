@@ -53,18 +53,17 @@ public class OAuth2AuthorizationServerSecurityConfiguration {
 		// http.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
 		// 	.oidc(Customizer.withDefaults());	// Enable OpenID Connect 1.0
 		http
-			// Redirect to the login page when not authenticated from the
-			// authorization endpoint
-			.exceptionHandling((exceptions) -> exceptions
-				.defaultAuthenticationEntryPointFor(
-					new LoginUrlAuthenticationEntryPoint("/login"),
-					new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+				// Redirect to the login page when not authenticated from the
+				// authorization endpoint
+				.exceptionHandling(exceptions -> exceptions
+						.defaultAuthenticationEntryPointFor(
+								new LoginUrlAuthenticationEntryPoint("/login"),
+								new MediaTypeRequestMatcher(MediaType.TEXT_HTML)
+						)
 				)
-			)
-			// Accept access tokens for User Info and/or Client Registration
-			.oauth2ResourceServer((resourceServer) -> resourceServer
-				.jwt(Customizer.withDefaults()))
-			.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
+				// Accept access tokens for User Info and/or Client Registration
+				.oauth2ResourceServer(resourceServer -> resourceServer.jwt(Customizer.withDefaults()))
+				.getConfigurer(OAuth2AuthorizationServerConfigurer.class)
 				.oidc(Customizer.withDefaults());
 
 		return http.build();
@@ -73,14 +72,9 @@ public class OAuth2AuthorizationServerSecurityConfiguration {
 	@Bean
 	@Order(2)
 	public SecurityFilterChain standardSecurityFilterChain(HttpSecurity http) throws Exception {
-		// @formatter:off
 		http
-			.authorizeHttpRequests((authorize) -> authorize
-				.anyRequest().authenticated()
-			)
+			.authorizeHttpRequests(authorize -> authorize.anyRequest().authenticated())
 			.formLogin(Customizer.withDefaults());
-		// @formatter:on
-
 		return http.build();
 	}
 

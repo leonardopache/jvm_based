@@ -1,0 +1,64 @@
+#
+# Get all products with categories
+# @name get-all-products
+GET http://localhost:8181/api/v1/products
+
+###
+#
+# Get all Orders
+# @name get-all-orders
+GET http://localhost:8181/api/v1/orders
+
+###
+#
+# Create order without product.
+# @name create-order-basic
+POST http://localhost:8181/api/v1/orders
+Content-Type: application/json
+
+{
+  "userId": "dca582ad-1888-44b0-a868-38d85c533952",
+  "seatNumber": "12",
+  "seatLetter": "A"
+}
+###
+#
+# Create order with product.
+# @name create-order-full
+POST http://localhost:8181/api/v1/orders
+Content-Type: application/json
+
+{
+  "products": [
+    {
+      "productId": "5fe7897e-5e7a-49ec-9bd9-ecd3e7525df7",
+      "quantity": 1,
+      "price": 1
+    }
+  ],
+  "userId": "dca582ad-1888-44b0-a868-38d85c533952",
+  "total": 1,
+  "seatNumber": "12",
+  "seatLetter": "A"
+}
+
+###
+#
+# Update an order.
+# @name update-order
+PUT http://localhost:8181/api/v1/products
+
+###
+#
+# Finish an order.
+# @name finish-order
+POST http://localhost:8181/api/v1/products
+
+###
+
+#
+# Delete an order.
+# @name delete-order
+DELETE http://localhost:8181/api/v1/products
+
+###
