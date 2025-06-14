@@ -7,12 +7,12 @@ import com.webflux.immfly.core.order.model.Order;
 import com.webflux.immfly.core.order.model.OrderStatus;
 import com.webflux.immfly.core.order.reposistory.OrderRepository;
 import com.webflux.immfly.core.product.service.ProductService;
+import com.webflux.immfly.remote.PaymentGateway;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.util.CollectionUtils;
 import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
-import reactor.core.scheduler.Schedulers;
 
 import java.util.List;
 import java.util.UUID;
@@ -22,15 +22,16 @@ import static com.webflux.immfly.core.product.service.ProductService.PRODUCT_ERR
 @Service
 @AllArgsConstructor
 public class OrderService {
-    private final OrderProductService orderProductService;
     private final OrderRepository orderRepository;
+
+    private final OrderProductService orderProductService;
     private final ProductService productService;
 
     // TODO create proper error handling for order
     private static final String ORDER_ERROR_MSG_NOT_FOUND = "Order with ID: [%s] not found";
     private static final String ORDER_ERROR_MSG_INVALID_STATUS = "Order with ID: [%s] is not opened";
 
-    public Mono<String> createOrder(OrderRequest request) {
+    public Mono<Order> createOrder(OrderRequest request) {
         return Mono.just(request)
                 .delayUntil(order -> Mono.defer(() -> checkStock(order.products())))
                 .zipWhen(orderRequest -> orderRepository.save(Order.toOrder(orderRequest)), (req, order) -> order)
@@ -40,29 +41,36 @@ public class OrderService {
                     return order;
                 })
                 .zipWhen(order -> orderProductService.saveProducts(order.getOrderProducts())
-                        .collectList(), (order, orderProducts) -> order)
-                .map(Order::getId)
-                .map(UUID::toString);
+                        .collectList(), (order, orderProducts) -> order);
     }
 
-    public Mono<String> updateOrder(String orderId, OrderRequest request) {
+    // TODO in some way the price should be from product and not what was provided in request
+    public Mono<Order> updateOrder(String orderId, OrderRequest request) {
         var order = Order.toOrder(request);
         order.setId(UUID.fromString(orderId));
         return orderRepository.findById(UUID.fromString(orderId))
                 .switchIfEmpty(Mono.error(new Throwable(ORDER_ERROR_MSG_NOT_FOUND.formatted(orderId))))
-                .flatMap(orderDb -> (orderDb.getStatus() != OrderStatus.OPENED) ?
-                        Mono.error(new Throwable(ORDER_ERROR_MSG_INVALID_STATUS.formatted(orderId)))
-                        : Mono.empty())
-                .delayUntil(order1 -> Mono.defer(() -> checkStock(request.products())))
+                .flatMap(OrderService::validateOrderStatusOpened)
+                .delayUntil(orderDb -> Mono.defer(() -> checkStock(request.products())))
                 .then(orderRepository.save(order))
-                //TODO DELETE all orderproducts related to this order and save the list updated
-                .map(Order::getId)
-                .map(UUID::toString);
+                .zipWhen(updatedOrder ->
+                        orderProductService.deleteOrderProducts(updatedOrder.getId()).then(Mono.just(updatedOrder)),
+                        (updatedOrder, v) -> updatedOrder)
+                .map(orderUpdated -> {
+                    orderUpdated.getOrderProducts()
+                            .forEach(orderProduct -> orderProduct.setOrderId(orderUpdated.getId()));
+                    return orderUpdated;
+                })
+                .zipWhen(updatedOrder ->
+                        orderProductService.saveProducts(updatedOrder.getOrderProducts())
+                                .collectList(),
+                        (updatedOrder, orderProducts) -> updatedOrder);
     }
 
     public Mono<String> deleteOrder(String orderId) {
         return orderRepository.findById(UUID.fromString(orderId))
                 .switchIfEmpty(Mono.error(new Throwable(ORDER_ERROR_MSG_NOT_FOUND.formatted(orderId))))
+                .flatMap(OrderService::validateOrderStatusOpened)
                 .map(order -> {
                     order.setStatus(OrderStatus.DROPED);
                     return order;
@@ -72,23 +80,16 @@ public class OrderService {
                 .map(UUID::toString);
     }
 
-    public Mono<Order> purchaseOrder(String orderId, OrderRequest request) {
-        var cold = orderRepository.findById(UUID.fromString(orderId))
-                .switchIfEmpty(Mono.error(new Throwable(ORDER_ERROR_MSG_NOT_FOUND.formatted(orderId))))
-                .map(order -> Order.toOrder(request))
-                .flatMap(OrderService::paymentGateway)
-                .flatMap(orderRepository::save);
-
-        return cold.subscribeOn(Schedulers.single());
+    private static Mono<Order> validateOrderStatusOpened(Order order) {
+        return (order.getStatus() != OrderStatus.OPENED) ?
+                Mono.error(new Throwable(ORDER_ERROR_MSG_INVALID_STATUS.formatted(order.getId())))
+                : Mono.just(order);
     }
 
-    private static Mono<Order> paymentGateway(Order order) {
-        order.setPaymentGateway("");
-        order.setPaymentCard("");
-        order.setPaymentTotal(order.getTotal().toString());
-        order.setPaymentStatus("");
-        order.setStatus(OrderStatus.FINISHED);
-        return Mono.just(order);
+    public Mono<Order> purchaseOrder(String orderId, OrderRequest request) {
+        return updateOrder(orderId, request)
+                .flatMap(PaymentGateway::pay)
+                .flatMap(orderRepository::save);
     }
 
     public Mono<Void> checkStock(List<OrderItem> products) {

@@ -5,6 +5,7 @@ import com.webflux.immfly.api.order.model.OrderRequest.OrderItem;
 import com.webflux.immfly.core.order.model.Order;
 import com.webflux.immfly.core.order.model.OrderStatus;
 import com.webflux.immfly.core.order.reposistory.OrderRepository;
+import com.webflux.immfly.core.order.service.OrderProductService;
 import com.webflux.immfly.core.order.service.OrderService;
 import com.webflux.immfly.core.product.model.Product;
 import com.webflux.immfly.core.product.service.ProductService;
@@ -16,6 +17,7 @@ import org.junit.jupiter.params.provider.MethodSource;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
+import reactor.core.publisher.Flux;
 import reactor.core.publisher.Mono;
 import reactor.test.StepVerifier;
 
@@ -31,6 +33,8 @@ class OrderServiceTest {
 
     @Mock
     OrderRepository orderRepository;
+    @Mock
+    OrderProductService orderProductService;
     @Mock
     ProductService productService;
     @InjectMocks
@@ -56,14 +60,20 @@ class OrderServiceTest {
     void createOrder(String productId, OrderRequest request) {
         var orderId = UUID.randomUUID();
 
+        var expectedProduct = Product.builder().id(UUID.fromString(productId)).quantity(10).build();
         when(productService.getProductById(UUID.fromString(productId)))
-                .thenReturn(Mono.just(Product.builder().id(UUID.fromString(productId)).quantity(10).build()));
+                .thenReturn(Mono.just(expectedProduct));
 
+        var orderSaved = Order.toOrder(request);
+        orderSaved.setId(orderId);
         when(orderRepository.save(Order.toOrder(request)))
-                .thenReturn(Mono.just(Order.builder().id(orderId).build()));
+                .thenReturn(Mono.just(orderSaved));
+
+        when(orderProductService.saveProducts(orderSaved.getOrderProducts()))
+                .thenReturn(Flux.fromIterable(orderSaved.getOrderProducts()));
 
         StepVerifier.create(orderService.createOrder(request))
-                .expectNext(orderId.toString())
+                .expectNext(orderSaved)
                 .verifyComplete();
     }
 
@@ -76,10 +86,13 @@ class OrderServiceTest {
                 .products(List.of(new OrderRequest.OrderItem(productId.toString(), 10, 1.5F)))
                 .build();
 
+        var expectedProduct = Product.builder().id(productId).quantity(1).build();
         when(productService.getProductById(productId))
-                .thenReturn(Mono.just(Product.builder().id(productId).quantity(1).build()));
+                .thenReturn(Mono.just(expectedProduct));
+
+        var expectedOrder = Order.builder().id(orderId).build();
         when(orderRepository.save(Order.toOrder(request)))
-                .thenReturn(Mono.just(Order.builder().id(orderId).build()));
+                .thenReturn(Mono.just(expectedOrder));
 
         StepVerifier.create(orderService.createOrder(request))
                 .expectErrorMatches(error -> error.getMessage().equals("Product with ID: [" + productId + "] is out of stock"))
@@ -95,7 +108,6 @@ class OrderServiceTest {
         var orderItemB = new OrderItem(productIdB.toString(), 2, 1.5F);
         var productIdC = UUID.randomUUID();
         var orderItemC = new OrderItem(productIdC.toString(), 3, 1.5F);
-
         var request = OrderRequest.builder()
                 .userId(UUID.randomUUID().toString())
                 .products(List.of(orderItemA, orderItemB, orderItemC))
@@ -103,24 +115,37 @@ class OrderServiceTest {
                 .seatNumber("12")
                 .build();
 
+        var expectedOrder = Order.builder()
+                .id(orderId)
+                .seatLetter('A')
+                .seatNumber("12")
+                .status(OrderStatus.OPENED)
+                .build();
         when(orderRepository.findById(orderId))
-                .thenReturn(Mono.just(Order.builder()
-                        .id(orderId)
-                        .seatLetter('A')
-                        .seatNumber("12")
-                        .status(OrderStatus.OPENED)
-                        .build()));
+                .thenReturn(Mono.just(expectedOrder));
 
+        var expectedProduct = Product.builder().quantity(10).build();
         when(productService.getProductById(any()))
-                .thenReturn(Mono.just(Product.builder().quantity(10).build()));
+                .thenReturn(Mono.just(expectedProduct));
 
         var orderToUpdate = Order.toOrder(request);
         orderToUpdate.setId(orderId);
         when(orderRepository.save(orderToUpdate))
-                .thenReturn(Mono.just(Order.builder().id(orderId).build()));
+                .thenReturn(Mono.just(orderToUpdate));
 
+        when(orderProductService.deleteOrderProducts(orderToUpdate.getId()))
+                .thenReturn(Mono.empty());
+
+        when(orderProductService.saveProducts(orderToUpdate.getOrderProducts()))
+                .thenReturn(Flux.fromIterable(orderToUpdate.getOrderProducts()));
+
+        var expectedOrderUpdated = Order.toOrder(request);
+        expectedOrderUpdated.setId(orderId);
+        expectedOrderUpdated.setUserId(UUID.fromString(request.userId()));
+        expectedOrderUpdated.setStatus(OrderStatus.OPENED);
+        expectedOrderUpdated.getOrderProducts().forEach(orderProduct -> orderProduct.setOrderId(orderId));
         StepVerifier.create(orderService.updateOrder(orderId.toString(), request))
-                .expectNext(orderId.toString())
+                .expectNext(expectedOrderUpdated)
                 .verifyComplete();
     }
 
@@ -161,14 +186,39 @@ class OrderServiceTest {
                 .total(9.0F)
                 .build();
 
+        var expectedOrder = Order.builder()
+                .id(orderId)
+                .seatLetter('A')
+                .seatNumber("12")
+                .status(OrderStatus.OPENED)
+                .build();
         when(orderRepository.findById(orderId))
-                .thenReturn(Mono.just(Order.builder().build()));
+                .thenReturn(Mono.just(expectedOrder));
+
+        var expectedProduct = Product.builder().quantity(10).build();
+        when(productService.getProductById(any()))
+                .thenReturn(Mono.just(expectedProduct));
+
+        var orderToUpdate = Order.toOrder(request);
+        orderToUpdate.setId(orderId);
+        when(orderRepository.save(orderToUpdate))
+                .thenReturn(Mono.just(orderToUpdate));
+
+        when(orderProductService.deleteOrderProducts(orderToUpdate.getId()))
+                .thenReturn(Mono.empty());
+
+        when(orderProductService.saveProducts(orderToUpdate.getOrderProducts()))
+                .thenReturn(Flux.fromIterable(orderToUpdate.getOrderProducts()));
 
         var orderUpdated = Order.toOrder(request);
-        orderUpdated.setPaymentGateway("");
-        orderUpdated.setPaymentCard("");
-        orderUpdated.setPaymentTotal(orderUpdated.getTotal().toString());
-        orderUpdated.setPaymentStatus("");
+        orderUpdated.setId(orderId);
+        orderUpdated.setUserId(UUID.fromString(request.userId()));
+        orderUpdated.setStatus(OrderStatus.OPENED);
+        orderUpdated.getOrderProducts().forEach(orderProduct -> orderProduct.setOrderId(orderId));
+        orderUpdated.setPaymentGateway("not implemented");
+        orderUpdated.setPaymentCard("0000-0000-0000-0000");
+        orderUpdated.setPaymentTotal(orderUpdated.getTotal());
+        orderUpdated.setPaymentStatus("Paid");
         orderUpdated.setStatus(OrderStatus.FINISHED);
 
         when(orderRepository.save(orderUpdated))
@@ -199,6 +249,29 @@ class OrderServiceTest {
 
         StepVerifier.create(orderService.deleteOrder(orderId.toString()))
                 .expectNext(orderToUpdate.getId().toString())
+                .verifyComplete();
+    }
+
+    @Test
+    void getOrders() {
+
+        when(orderRepository.findAll())
+                .thenReturn(Flux.fromIterable(
+                        List.of(
+                                Order.builder()
+                                        .id(UUID.randomUUID())
+                                        .userId(UUID.randomUUID())
+                                        .build(),
+                                Order.builder()
+                                        .id(UUID.randomUUID())
+                                        .userId(UUID.randomUUID())
+                                        .build())));
+
+        when(orderProductService.getProductsFromOrderProduct(any()))
+                .thenReturn(Flux.fromIterable(List.of()));
+
+        StepVerifier.create(orderService.getOrders())
+                .expectNextCount(2)
                 .verifyComplete();
     }
 }

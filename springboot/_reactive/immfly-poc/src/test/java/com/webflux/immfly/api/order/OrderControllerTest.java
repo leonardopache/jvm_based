@@ -36,7 +36,7 @@ class OrderControllerTest {
 
     @Test
     void createOrder() {
-        var orderUUID = UUID.randomUUID().toString();
+        var orderUUID = UUID.randomUUID();
 
         var orderRequest = OrderRequest.builder()
                 .products(List.of(new OrderItem(UUID.randomUUID().toString(), 1, 1.5F)))
@@ -45,19 +45,19 @@ class OrderControllerTest {
                 .build();
 
         when(orderService.createOrder(orderRequest))
-                .thenReturn(Mono.just(orderUUID));
+                .thenReturn(Mono.just(Order.builder().id(orderUUID).build()));
 
         webTestClient.post()
                 .uri("/api/v1/orders")
                 .bodyValue(orderRequest)
                 .exchange()
                 .expectBody(String.class)
-                .consumeWith(result -> assertEquals(result.getResponseBody(), orderUUID));
+                .consumeWith(result -> assertEquals(result.getResponseBody(), orderUUID.toString()));
     }
 
     @Test
     void updateOrder() {
-        var orderUUID = UUID.randomUUID().toString();
+        var orderUUID = UUID.randomUUID();
 
         var orderRequest = OrderRequest.builder()
                 .products(List.of(new OrderItem(UUID.randomUUID().toString(), 1, 1.5F)))
@@ -65,15 +65,15 @@ class OrderControllerTest {
                 .total(10.00F)
                 .build();
 
-        when(orderService.updateOrder(orderUUID, orderRequest))
-                .thenReturn(Mono.just(orderUUID));
+        when(orderService.updateOrder(orderUUID.toString(), orderRequest))
+                .thenReturn(Mono.just(Order.builder().id(orderUUID).build()));
 
         webTestClient.put()
                 .uri("/api/v1/orders/" + orderUUID)
                 .bodyValue(orderRequest)
                 .exchange()
                 .expectBody(String.class)
-                .consumeWith(result -> assertEquals(result.getResponseBody(), orderUUID));
+                .consumeWith(result -> assertEquals(result.getResponseBody(), orderUUID.toString()));
     }
 
     @Test

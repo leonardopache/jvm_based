@@ -17,6 +17,7 @@ import org.springframework.data.relational.core.mapping.Table;
 import java.math.BigDecimal;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.Optional;
 import java.util.UUID;
 import java.util.concurrent.atomic.AtomicReference;
@@ -41,8 +42,7 @@ public class Order {
     private BigDecimal total;
     private String paymentCard;
     private String paymentStatus;
-    private String paymentDateTime;
-    private String paymentTotal;
+    private BigDecimal paymentTotal;
     private String paymentGateway;
 
 
@@ -73,7 +73,7 @@ public class Order {
         return OrderResponse.builder()
                 .id(order.getId().toString())
                 .status(order.getStatus())
-                .total(order.getTotal().floatValue())
+                .total(Objects.nonNull(order.getTotal())?order.getTotal().floatValue(): 0)
                 .userId(order.getUserId().toString())
                 .seatLetter(order.getSeatLetter())
                 .seatNumber(order.getSeatNumber())
@@ -85,9 +85,8 @@ public class Order {
                         .toList())
                 .paymentGateway(order.getPaymentGateway())
                 .paymentCard(order.getPaymentCard())
-                .paymentTotal(order.getPaymentTotal())
+                .paymentTotal(Objects.nonNull(order.getPaymentTotal())? order.getPaymentTotal().floatValue() : 0)
                 .paymentStatus(order.getPaymentStatus())
-                .paymentDateTime(order.getPaymentDateTime())
                 .build();
     }
 }

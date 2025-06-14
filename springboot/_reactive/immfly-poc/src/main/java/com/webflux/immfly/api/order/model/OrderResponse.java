@@ -17,8 +17,7 @@ public record OrderResponse(
         float total,
         String paymentCard,
         String paymentStatus,
-        String paymentDateTime,
-        String paymentTotal,
+        float paymentTotal,
         String paymentGateway) {
     @Builder
     public record OrderProductResponse(

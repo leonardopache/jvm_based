@@ -1,4 +1,4 @@
-## how to run
+## How to run
 
 ## API documentation
 

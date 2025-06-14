@@ -1,19 +1,19 @@
 #
 # Get all products with categories
 # @name get-all-products
-GET http://localhost:8181/api/v1/products
+GET http://localhost:8080/api/v1/products
 
 ###
 #
 # Get all Orders
 # @name get-all-orders
-GET http://localhost:8181/api/v1/orders
+GET http://localhost:8080/api/v1/orders
 
 ###
 #
 # Create order without product.
 # @name create-order-basic
-POST http://localhost:8181/api/v1/orders
+POST http://localhost:8080/api/v1/orders
 Content-Type: application/json
 
 {
@@ -25,7 +25,7 @@ Content-Type: application/json
 #
 # Create order with product.
 # @name create-order-full
-POST http://localhost:8181/api/v1/orders
+POST http://localhost:8080/api/v1/orders
 Content-Type: application/json
 
 {
@@ -37,28 +37,55 @@ Content-Type: application/json
     }
   ],
   "userId": "dca582ad-1888-44b0-a868-38d85c533952",
-  "total": 1,
   "seatNumber": "12",
   "seatLetter": "A"
 }
 
 ###
 #
-# Update an order.
+# Update an order to add product.
 # @name update-order
-PUT http://localhost:8181/api/v1/products
+PUT http://localhost:8080/api/v1/orders/80db5eaf-5034-4584-aa96-17ecc4fc3225
+Content-Type: application/json
+
+{
+  "products": [
+    {
+      "productId": "a80d205f-c430-4f21-9344-e3be35316e9e",
+      "quantity": 2,
+      "price": 1
+    }
+  ],
+  "userId": "dca582ad-1888-44b0-a868-38d85c533952",
+  "seatNumber": "12",
+  "seatLetter": "A"
+}
 
 ###
 #
 # Finish an order.
 # @name finish-order
-POST http://localhost:8181/api/v1/products
+POST http://localhost:8080/api/v1/orders/80db5eaf-5034-4584-aa96-17ecc4fc3225/purchase
+Content-Type: application/json
+
+{
+  "products": [
+    {
+      "productId": "3fb9d15a-79ce-43ce-8cc0-be582ac84cb4",
+      "quantity": 1,
+      "price": 0.5
+    }
+  ],
+  "userId": "465d2d38-50ab-4a1e-9674-71667cfb68b9",
+  "seatNumber": "12",
+  "seatLetter": "A"
+}
 
 ###
 
 #
 # Delete an order.
 # @name delete-order
-DELETE http://localhost:8181/api/v1/products
+DELETE http://localhost:8080/api/v1/orders/80db5eaf-5034-4584-aa96-17ecc4fc3225
 
 ###

@@ -34,12 +34,16 @@ public class OrderController {
 
     @PostMapping
     public Mono<String> createOrder(@RequestBody OrderRequest request) {
-        return orderService.createOrder(request);
+        return orderService.createOrder(request)
+                .map(Order::getId)
+                .map(UUID::toString);
     }
 
     @PutMapping("/{orderId}")
     public Mono<String> updateOrder(@PathVariable String orderId, @RequestBody OrderRequest request) {
-        return orderService.updateOrder(orderId, request);
+        return orderService.updateOrder(orderId, request)
+                .map(Order::getId)
+                .map(UUID::toString);
     }
 
     @PostMapping("/{orderId}/purchase")
@@ -50,7 +54,7 @@ public class OrderController {
     }
 
     @DeleteMapping("/{orderId}")
-    public Mono<String> purchaseOrder(@PathVariable String orderId) {
+    public Mono<String> deleteOrder(@PathVariable String orderId) {
         return orderService.deleteOrder(orderId);
     }
 }

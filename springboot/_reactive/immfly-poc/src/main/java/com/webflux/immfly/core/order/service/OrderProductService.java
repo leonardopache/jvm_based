@@ -6,6 +6,7 @@ import com.webflux.immfly.core.product.service.ProductService;
 import lombok.AllArgsConstructor;
 import org.springframework.stereotype.Service;
 import reactor.core.publisher.Flux;
+import reactor.core.publisher.Mono;
 
 import java.util.List;
 import java.util.UUID;
@@ -28,5 +29,9 @@ public class OrderProductService {
 
     public Flux<OrderProduct> saveProducts(List<OrderProduct> orderProducts) {
         return orderProductRepository.saveAll(orderProducts);
+    }
+
+    public Mono<Void> deleteOrderProducts(UUID orderId) {
+        return orderProductRepository.deleteAllByOrderId(orderId);
     }
 }

@@ -6,7 +6,7 @@
  - User of Webflux to provide reactive programming (For such simple API maybe it's an over engineering)
  - Liquibase for data base integrity
  - Docker compose to quickly provide DB and run application
- - 
+
 
 ### API definition
 - basic entity definition
@@ -28,12 +28,12 @@
     - user
     - seat letter
     - seat number
-  - User
+  - ~~User
     - email
-    - password
+    - password~~
 - Added Liquibase to manage db creation and base data insertion
 - Provide the products (GET) and create orders (POST)
-  - _if has time_ add user authentication API  
+  - ~~_if has time_ add user authentication API~~  
   - For product provide one API to get all products categorized by category
     - GET /api/v1/products
     
@@ -41,13 +41,13 @@
     - POST /api/v1/orders
     - PATCH /api/v1/orders
     - POST /api/v1/orders/{id}/purchase
-  - Additional points _if has time_:
+  - ~~Additional points _if has time_:
     - CRUD for category
     - CRUD for product
-    - Integration tests
+    - Integration tests~~
 
 ### basic business rules:
-- An Order can be opened without any products associated with it, but needs a seat position.
-- If customer cancels the request, the order should mark as canceled (DROPPED)
-- When updating (adding a buyer email, products) an Order, we need to check if the product has enough stock and recalculate the price
-- When Finishing an order, a payment status should be passed Paid, PaymentFailed, OfflinePayment status, a card token, the payment gateway used
+- ☑️ An Order can be opened without any products associated with it, but needs a seat position.
+- ☑️ If customer cancels the request, the order should mark as canceled (DROPPED)
+- ☑️ When updating (adding a buyer email, products) an Order, we need to check if the product has enough stock and recalculate the price
+- ☑️ When Finishing an order, a payment status should be passed Paid, PaymentFailed, OfflinePayment status, a card token, the payment gateway used
